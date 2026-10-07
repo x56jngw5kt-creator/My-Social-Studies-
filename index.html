@@ -17,10 +17,19 @@ document.getElementById('catMini').src=ASSETS.cat;document.getElementById('girlH
 const $=id=>document.getElementById(id);let currentQuiz=[];
 function go(id){document.querySelectorAll('.page').forEach(x=>x.classList.add('hidden'));$(id).classList.remove('hidden');document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b.dataset.page===id));if(id==='lessons')renderLessons();if(id==='quiz')renderQuiz();if(id==='ask'&&!$('msgs').children.length)addMiao('أهلًا! أنا مياو 🐱\nاكتب سؤالك عن الدروس. هحلله بالكلمات المفتاحية وأجيبك من محتوى المنصة، ولو السؤال خارج المحتوى هقولك بدل ما أخمّن.');window.scrollTo({top:0,behavior:'smooth'})}
 document.querySelectorAll('.nav button').forEach(b=>b.onclick=()=>go(b.dataset.page));
-function lessonCard(l){return `<article class="card"><span class="unit">${l.unit}</span><h3>${l.title}</h3><p style="color:var(--muted);line-height:1.7">${l.summary}</p><button class="primary" onclick="openLesson(${l.id})">افتح الدرس</button></article>`}
+function lessonCard(l){return `<article class="card"><span class="unit">${l.unit}</span><h3>${l.title}</h3><p style="color:var(--muted);line-height:1.7">${l.summary}</p><button class="primary lesson-open" type="button" data-lesson-id="${l.id}">افتح الدرس</button></article>`}
 function renderHome(){ $('homeGrid').innerHTML=DATA.lessons.map(lessonCard).join(''); }
-function renderLessons(){ $('lessonGrid').innerHTML=DATA.lessons.map(lessonCard).join(''); }
-function openLesson(id){const l=DATA.lessons.find(x=>x.id===id);$('lessonView').innerHTML=`<div class="lesson active"><div class="section-title"><button class="secondary" onclick="renderLessons()">رجوع</button></div><div class="lesson-head"><span class="unit">${l.unit}</span><h2>${l.title}</h2><p>${l.summary}</p><div class="keywords">${l.keywords.map(k=>`<span class="keyword">${k}</span>`).join('')}</div></div><div class="two"><div class="box"><h3>ماذا تتعلم؟</h3><ul><li>فهم المفاهيم الأساسية للدرس.</li><li>تحليل الخريطة والصور المرتبطة بالموضوع.</li><li>تطبيق الفكرة في سؤال أو موقف جديد.</li></ul></div><div class="map"><b>خريطة مرتبطة بالدرس</b><img src="${ASSETS[l.map]}"><div style="color:var(--muted);font-size:13px">استخدم الخريطة للملاحظة وتحديد العلاقات المكانية.</div></div></div><div class="box" style="margin-top:16px"><h3>اسأل مياو عن هذا الدرس</h3><button class="primary" onclick="go('ask');setTimeout(()=>askQuick('${l.keywords[0]} ما أهم النقاط في الدرس؟'),100)">اسأل مياو</button></div></div>`;window.scrollTo({top:0,behavior:'smooth'})}
+function renderLessons(){ $('lessonView').innerHTML=''; $('lessonGrid').innerHTML=DATA.lessons.map(lessonCard).join(''); document.querySelectorAll('.lesson-open').forEach(btn=>btn.addEventListener('click',()=>openLesson(Number(btn.dataset.lessonId)))); }
+function openLesson(id){
+ const l=DATA.lessons.find(x=>Number(x.id)===Number(id));
+ if(!l){console.error('Lesson not found:',id);return;}
+ const qs=DATA.questions.filter(q=>Number(q.lesson)===Number(l.id));
+ $('lessonView').innerHTML=`<div class="lesson active" id="openedLesson"><div class="section-title"><button class="secondary" id="lessonBack" type="button">رجوع للدروس</button></div><div class="lesson-head"><span class="unit">${l.unit}</span><h2>${l.title}</h2><p>${l.summary}</p><div class="keywords">${l.keywords.map(k=>`<span class="keyword">${k}</span>`).join('')}</div></div><div class="two"><div class="box"><h3>ماذا تتعلم؟</h3><ul><li>فهم المفاهيم الأساسية للدرس.</li><li>تحليل الخريطة والصور المرتبطة بالموضوع.</li><li>تطبيق الفكرة في سؤال أو موقف جديد.</li></ul><h3>كلمات مفتاحية</h3><div class="keywords">${l.keywords.map(k=>`<span class="keyword">${k}</span>`).join('')}</div></div><div class="map"><b>خريطة مرتبطة بالدرس</b><img src="${ASSETS[l.map]}" alt="خريطة مرتبطة بالدرس"><div style="color:var(--muted);font-size:13px">استخدم الخريطة للملاحظة وتحديد العلاقات المكانية.</div></div></div><div class="box" style="margin-top:16px"><h3>تدريب سريع من الدرس</h3>${qs.slice(0,5).map((q,i)=>`<div style="padding:12px 0;border-top:1px solid #eee2a8"><b>${i+1}. ${q.q}</b><div style="color:var(--muted);margin-top:6px">الإجابة: ${q.options[q.answer]}</div></div>`).join('')}</div><div class="box" style="margin-top:16px"><h3>اسأل مياو عن هذا الدرس</h3><button class="primary" id="askLessonBtn" type="button">اسأل مياو</button></div></div>`;
+ $('lessonGrid').style.display='none';
+ $('lessonBack').addEventListener('click',()=>{ $('lessonGrid').style.display='grid'; $('lessonView').innerHTML=''; window.scrollTo({top:0,behavior:'smooth'}); });
+ $('askLessonBtn').addEventListener('click',()=>{go('ask');setTimeout(()=>askQuick(l.keywords[0]+' ما أهم النقاط في الدرس؟'),100);});
+ $('openedLesson').scrollIntoView({behavior:'smooth',block:'start'});
+}
 function norm(s){return s.toLowerCase().replace(/[إأآ]/g,'ا').replace(/ة/g,'ه').replace(/ى/g,'ي').replace(/[ًٌٍَُِّْـ]/g,'').replace(/[^\u0600-\u06FFa-z0-9 ]/g,' ')}
 const intents=[
  {keys:['نيل','النهر الدولي','حوض النيل','اندوجو','مياه'],answer:l=>`نهر النيل محور مهم في الوحدة الأولى. يركز المحتوى على كونه نهرًا دوليًا، ودوره في نشأة الحضارة المصرية القديمة والتواصل بين مناطق إفريقيا، وعلى أهمية التعاون المائي وترشيد الاستهلاك. إذا أردت، اسألني عن الأندوجو أو عن دور النيل في الحضارة المصرية.`},
@@ -33,7 +42,40 @@ const intents=[
  {keys:['نظم بيئيه مائيه','بيئه مائيه','تلوث المياه','تلوث','بحيره','انهار'],answer:l=>`النظم البيئية المائية تشمل الأنهار والبحيرات والبيئات المرتبطة بالمياه. يركز المحتوى على أهميتها والضغوط التي تتعرض لها مثل التلوث، وعلى الاستخدام الرشيد وحماية الموارد.`},
  {keys:['اسلام','انتشار الاسلام','تجاره','تواصل حضاري','ثقافه'],answer:l=>`انتشار الإسلام في إفريقيا يرتبط في الدرس بالتجارة والتواصل بين المجتمعات، وما نتج عنه من تفاعل حضاري وانتقال للأفكار والثقافات. ويمكنك استخدام خريطة الدرس لتصور الانتشار مكانيًا.`}
 ];
-function answerQuestion(q){const n=norm(q);for(const i of intents){if(i.keys.some(k=>n.includes(norm(k))))return i.answer();}for(const l of DATA.lessons){let score=l.keywords.reduce((s,k)=>s+(n.includes(norm(k))?1:0),0);if(score>=1)return `سؤالك يبدو مرتبطًا بدرس «${l.title}». ${l.summary} إذا كتبت السؤال بشكل أكثر تحديدًا مثل «ما أهمية...؟» أو «علل...؟» أقدر أوجهك للنقطة المناسبة.`;}return `مش لاقي إجابة موثوقة للسؤال داخل قاعدة محتوى الدراسات الحالية، ومش هخمن. جرّب كلمات مثل: إفريقيا، النيل، التضاريس، الأهرام، الدولة الحديثة، السافانا، النظم المائية، انتشار الإسلام.`}
+function answerQuestion(q){
+ const n=norm(q);
+ // 1) Exact/near-exact retrieval from the local question bank.
+ let best=null,bestScore=0;
+ for(const item of DATA.questions){
+   const nq=norm(item.q);
+   if(n===nq) return `الإجابة الصحيحة: ${item.options[item.answer]}\n\nالسؤال موجود ضمن بنك أسئلة الدرس، ومياو اعتمد على الإجابة المسجلة في المنصة.`;
+   const words=n.split(' ').filter(w=>w.length>1);
+   const hits=words.filter(w=>nq.includes(w)).length;
+   const score=hits/Math.max(1,Math.min(words.length,nq.split(' ').length));
+   if(score>bestScore){bestScore=score;best=item;}
+ }
+ if(best && bestScore>=0.55){
+   return `أقرب سؤال وجدته في بنك الدرس هو:\n«${best.q}»\n\nالإجابة: ${best.options[best.answer]}\n\nلو تقصد نقطة مختلفة، اكتب السؤال كاملًا وسأبحث في المحتوى مرة أخرى.`;
+ }
+ // 2) Intent matching with question type.
+ const why=/لماذا|ليه|علل|بم تفسر|فسر|سبب/.test(n);
+ const define=/ما المقصود|ماذا يعني|تعريف|يعني ايه|يعنى ايه/.test(n);
+ const compare=/قارن|المقارنه|الفرق بين|فرق بين/.test(n);
+ const importance=/اهميه|أهميه|اهم ما|لماذا يعد|ما فائده/.test(n);
+ for(const i of intents){if(i.keys.some(k=>n.includes(norm(k)))){
+   let a=i.answer();
+   if(why) a='تعليل مختصر: '+a;
+   else if(define) a='المقصود في محتوى المنصة: '+a;
+   else if(compare) a+=' إذا كنت تريد مقارنة محددة، اذكر العنصرين وسأرتبها لك نقطة بنقطة.';
+   else if(importance) a+=' ويمكنك اعتبار هذه النقاط هي الأهم للمراجعة.';
+   return a;
+ }}
+ // 3) Lesson retrieval.
+ let bestLesson=null,ls=0;
+ for(const l of DATA.lessons){let score=l.keywords.reduce((s,k)=>s+(n.includes(norm(k))?1:0),0);if(score>ls){ls=score;bestLesson=l;}}
+ if(bestLesson) return `سؤالك مرتبط بدرس «${bestLesson.title}».\n\n${bestLesson.summary}\n\nالكلمات المرتبطة: ${bestLesson.keywords.join('، ')}.\n\nاكتب السؤال بشكل مباشر مثل «ما المقصود بـ...؟» أو «علل...؟» لأبحث لك عن إجابة أدق من قاعدة المحتوى.`;
+ return `مش لاقي إجابة موثوقة للسؤال داخل قاعدة محتوى الدراسات الحالية، ومش هخمن. جرّب صياغة السؤال بكلمات من الدروس مثل: إفريقيا، الموقع، الكشوف الجغرافية، النيل، الأخدود الإفريقي، الأهرام، الدولة الحديثة، الغابات، السافانا، النظم المائية، انتشار الإسلام.`;
+}
 function addMsg(text,cls){const d=document.createElement('div');d.className='msg '+cls;d.textContent=text;$('msgs').appendChild(d);$('msgs').scrollTop=$('msgs').scrollHeight}
 function addMiao(t){addMsg(t,'miao')}
 function askQuick(q){go('ask');addMsg(q,'user');setTimeout(()=>addMiao(answerQuestion(q)),180)}
