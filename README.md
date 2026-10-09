@@ -1,8 +1,24 @@
-# My Social Studies
+SPRIX Chemistry — Self-contained interactive version
 
-نسخة مستقلة من المنصة للصف الأول الإعدادي.
+- All core images (SPRIX wordmark, ministry logo, Kimchi, Nitcho) are embedded as data URIs in app.js.
+- 26 lesson-specific interactive experiments.
+- 26 embedded MP4 micro-explanations; no external video paths.
+- 25 independent MCQs for every lesson (650 lesson questions).
+- Final review pool of exactly 1000 MCQs; used review questions are stored locally and removed from future review sessions on the same device.
+- Virtual lab with all 118 chemical elements, tools, and an equation-balancing checker for common educational equations.
+- Arabic speech uses the browser/device speech synthesis engine.
+- GitHub Pages ready: upload index.html, app.js and style.css.
 
-- الشخصيات والخرائط مدمجة داخل `index.html` بصيغة Data URI.
-- اسأل مياو يعمل محليًا بنظام كلمات مفتاحية واسترجاع من قاعدة المحتوى، بدون API أو مفتاح سري.
-- المحتوى الدراسي مُعاد صياغته ومختصر، والأسئلة أصلية مبنية على موضوعات المنهج وليست نسخًا حرفيًا من الكتب.
-- هيكل الدروس مستند إلى كتاب الدراسات الاجتماعية المرفوع في المحادثة، مع الاستفادة من الكتب المساعدة لتوسيع التدريب.
+
+## Gemini integration (Ask Kimchi)
+- `app.js` calls Gemini API from the browser in Ask Kimchi.
+- Paste your key into `GEMINI_API_KEY` in `app.js` before publishing. The key is public on GitHub Pages; monitor quota and rotate it if exposed.
+- `chemistry-book-chunks.json` contains extracted text chunks from Chemistry-Ar-EB-part1.pdf and is searched locally to provide relevant textbook context.
+- Upload `index.html`, `platform.html`, `app.js`, `style.css`, and `chemistry-book-chunks.json` together to the same Pages root.
+
+
+## إعداد كيمتشي عبر Groq (بديل مجاني محدود)
+- افتح app.js وابحث عن PASTE_YOUR_GROQ_API_KEY_HERE وضع مفتاح Groq الخاص بك محليًا. لا ترسل المفتاح لأي شخص.
+- النموذج المستخدم: openai/gpt-oss-120b. الاستخدام المجاني له حدود وقد تتغير.
+- GitHub Pages موقع عام؛ المفتاح داخل JavaScript سيكون مرئيًا للزوار. للحماية الفعلية استخدم خادمًا وسيطًا وخزّن المفتاح كمتغير بيئة.
+- لم يتم اختبار اتصال حي بمفتاح حقيقي في هذه الحزمة.
